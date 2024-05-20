@@ -44,6 +44,13 @@ kotlin {
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
+
+            implementation(libs.navigator)
+            implementation(libs.transitions)
+            implementation(libs.voyager.koin)
+            implementation(libs.screen.model)
+
+            implementation(libs.koin.core)
         }
     }
 }
