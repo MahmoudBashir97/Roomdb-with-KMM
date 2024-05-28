@@ -1,107 +1,79 @@
+package screen
+
 import Model.User
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
+import ViewModel.AppViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.room.RoomDatabase
-import cafe.adriel.voyager.navigator.Navigator
-import database.UserDatabase
-import di.initKoin
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import screen.HomeScreen
 import kotlin.random.Random
 
-@OptIn(ExperimentalResourceApi::class)
-@Composable
-@Preview
-fun App(databaseBuilder: RoomDatabase.Builder<UserDatabase>) {
-    // Building the database
-    // val database = remember { databaseBuilder.build() }
-    initKoin(databaseBuilder.build())
+class HomeScreen : Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val viewModel: AppViewModel = getScreenModel()
 
-    MaterialTheme {
-        Navigator(HomeScreen())
-
-        // MainContent(database)
-        /*var showContent by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
-        }*/
+        MainHomeContent(viewModel)
     }
 }
 
 @Composable
-fun MainContent(database: UserDatabase) {
+fun MainHomeContent(viewModel: AppViewModel) {
     val scope = rememberCoroutineScope()
-    // Creating UserDao instance and passing in other screens
-    val userDao = remember { database.userDao() }
 
-    val userList = remember { mutableStateListOf<User>() }
-    val list: MutableList<User> = ArrayList()
+    val userList = remember { viewModel.usersList }
 
-    LaunchedEffect(Unit) {
-        scope.launch(Dispatchers.IO) {
-            userList.addAll(userDao.getAllUsers())
-        }
+    viewModel.usersListMD.collectAsState().value.apply {
+        userList.clear()
+        userList.addAll(this)
     }
 
-    ScreenContent(userList) {
-        userList.clear()
+    ScreenContent(viewModel.usersListMD.collectAsState().value.toMutableList()) {
         scope.launch(Dispatchers.IO) {
-            userDao.insert(
+            viewModel.insertUser(
                 User(
                     name = "Mahmoud ${Random.nextInt()}",
                 )
             )
-            userList.addAll(userDao.getAllUsers())
         }
     }
 }
 
+
 @Preview
 @Composable
 fun ScreenContent(usersList: MutableList<User>, onAdd: (() -> Unit)? = null) {
-    usersList
     Scaffold(modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
@@ -135,10 +107,3 @@ fun ScreenContent(usersList: MutableList<User>, onAdd: (() -> Unit)? = null) {
         }
     }
 }
-
-val fakeList = listOf(
-    User(name = "Mahmoud"),
-    User(name = "Mahmoud"),
-    User(name = "Mahmoud"),
-    User(name = "Mahmoud"),
-)

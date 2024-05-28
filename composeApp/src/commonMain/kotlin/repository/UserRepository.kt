@@ -4,12 +4,13 @@ import Model.User
 import database.UserDao
 
 interface UserRepositoryImp {
-    suspend fun getIsUsers(): List<User>
+    suspend fun insertUser(user: User): Long
+    suspend fun getAllUsers(): List<User>
 }
 
 class UserRepository(private val userDao: UserDao) : UserRepositoryImp {
-    override suspend fun getIsUsers(): List<User> {
+    override suspend fun insertUser(user: User): Long = userDao.insert(user)
 
-        return userDao.getAllUsers()
-    }
+    override suspend fun getAllUsers(): List<User> = userDao.getAllUsers()
+
 }

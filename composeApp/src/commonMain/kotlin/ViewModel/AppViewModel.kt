@@ -1,0 +1,27 @@
+package ViewModel
+
+import Model.User
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import repository.UserRepository
+
+class AppViewModel(private val userRepo: UserRepository) : ScreenModel {
+    val usersList = mutableListOf<User>()
+    val usersListMD = MutableStateFlow(emptyList<User>())
+
+    fun insertUser(user: User) {
+        screenModelScope.launch {
+            userRepo.insertUser(user)
+            getUsers()
+        }
+    }
+
+    fun getUsers() = screenModelScope.launch {
+        userRepo.getAllUsers().let { users ->
+            if (users.isNotEmpty()) usersList.addAll(users)
+            usersListMD.value = users
+        }
+    }
+}
