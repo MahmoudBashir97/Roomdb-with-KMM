@@ -11,6 +11,10 @@ class AppViewModel(private val userRepo: UserRepository) : ScreenModel {
     val usersList = mutableListOf<User>()
     val usersListMD = MutableStateFlow(emptyList<User>())
 
+    init{
+        getUsers()
+    }
+
     fun insertUser(user: User) {
         screenModelScope.launch {
             userRepo.insertUser(user)
@@ -18,7 +22,7 @@ class AppViewModel(private val userRepo: UserRepository) : ScreenModel {
         }
     }
 
-    fun getUsers() = screenModelScope.launch {
+    private fun getUsers() = screenModelScope.launch {
         userRepo.getAllUsers().let { users ->
             if (users.isNotEmpty()) usersList.addAll(users)
             usersListMD.value = users

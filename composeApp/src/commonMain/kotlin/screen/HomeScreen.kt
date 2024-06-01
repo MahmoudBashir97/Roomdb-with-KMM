@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -32,8 +33,10 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.random.Random
@@ -59,7 +62,7 @@ fun MainHomeContent(viewModel: AppViewModel) {
         userList.addAll(this)
     }
 
-    ScreenContent(viewModel.usersListMD.collectAsState().value.toMutableList()) {
+    ScreenContent(viewModel.usersListMD.collectAsState().value.toMutableList(), scope) {
         scope.launch(Dispatchers.IO) {
             viewModel.insertUser(
                 User(
@@ -73,13 +76,25 @@ fun MainHomeContent(viewModel: AppViewModel) {
 
 @Preview
 @Composable
-fun ScreenContent(usersList: MutableList<User>, onAdd: (() -> Unit)? = null) {
+fun ScreenContent(
+    usersList: MutableList<User>,
+    scope: CoroutineScope,
+    onAdd: (() -> Unit)? = null
+) {
+
+    val listState = rememberLazyListState()
+
+
     Scaffold(modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
                 backgroundColor = Color.Black,
                 onClick = {
                     onAdd?.invoke()
+                    scope.launch {
+                        delay(100L)
+                        listState.animateScrollToItem(usersList.size + 1)
+                    }
                 }) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -88,7 +103,10 @@ fun ScreenContent(usersList: MutableList<User>, onAdd: (() -> Unit)? = null) {
                 )
             }
         }) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState
+        ) {
             items(usersList) {
                 Spacer(Modifier.height(10.dp))
                 Box(
