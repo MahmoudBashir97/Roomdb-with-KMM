@@ -1,6 +1,6 @@
 package database
 
-import Model.User
+import model.User
 import androidx.room.Database
 import androidx.room.RoomDatabase
 

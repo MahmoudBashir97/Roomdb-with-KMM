@@ -1,6 +1,6 @@
-package repository
+package repository.local
 
-import Model.User
+import model.User
 import database.UserDao
 
 interface UserRepositoryImp {

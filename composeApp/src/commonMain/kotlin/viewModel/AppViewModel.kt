@@ -1,11 +1,11 @@
-package ViewModel
+package viewModel
 
-import Model.User
+import model.User
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import repository.UserRepository
+import repository.local.UserRepository
 
 class AppViewModel(private val userRepo: UserRepository) : ScreenModel {
     val usersList = mutableListOf<User>()
