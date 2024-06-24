@@ -36,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.math.abs
 import kotlin.random.Random
 
 class HomeScreen : Screen {
@@ -63,7 +64,7 @@ fun MainHomeContent(viewModel: AppViewModel) {
         scope.launch(Dispatchers.IO) {
             viewModel.insertUser(
                 User(
-                    name = "Mahmoud ${Random.nextInt()}",
+                    name = "Mahmoud ${abs(Random.nextInt())}",
                 )
             )
         }
